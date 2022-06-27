@@ -1,0 +1,22 @@
+DOCKER COMANDOS
+
+
+
+
+docker run -d --name PI  --net=host -p 10.0.0.50:80:80 -v apache-data:/usr/local/apache2/htdocs httpd
+           
+-d CORRE2DO PLANO
+
+--name NOMBRECONTENEDOR
+
+--net=host UTILIZAR EL NIC DEL HOST
+
+-p x.x.x.x:port:port IP/PUERTO A USER
+
+-v Especificar rutadocker 
+
+ip link  delete lo ELIMINAR INTERFAZ DE RED
+
+
+https://hub.docker.com/r/itsthenetwork/nfs-server-alpine
+https://techexpert.tips/apache/apache-docker-installation/
