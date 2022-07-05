@@ -20,3 +20,25 @@ ip link  delete lo ELIMINAR INTERFAZ DE RED
 
 https://hub.docker.com/r/itsthenetwork/nfs-server-alpine
 https://techexpert.tips/apache/apache-docker-installation/
+
+
+
+
+
+
+
+https://blog.ruanbekker.com/blog/2020/09/20/setup-a-nfs-server-with-docker/
+
+
+
+ mkdir -p /data/nfs-storage
+
+
+docker run -itd --privileged \
+  --net=host              \
+  --name NFSPXE            \
+  --restart unless-stopped \
+  -e SHARED_DIRECTORY=/data \
+  -v /data/nfs-storage:/data \
+  -p 2049:2049 \
+  nfsalpine12
