@@ -1,0 +1,43 @@
+## vamos a utilizar 4 imagenes httpd, dhcpd, nfsalpine12, tftp
+
+HTTPD
+ creamos un docker file para  httpd para acargar los XML de los autoyast
+   dockerfile
+           FROM httpd
+           COPY /index.html/ /usr/local/apache2/htdocs/
+           COPY /autoinstUEFI.xml/ /usr/local/apache2/htdocs/
+           COPY /autoinstARS.xml/ /usr/local/apache2/htdocs/
+           COPY /autoinstLegacy.xml/ /usr/local/apache2/htdocs/
+   Los archivos autoinstUEFI.xml,autoinstLegacy.xml y autoinstARS.xml deben estar es la misma carpeta del archivo dockerfile
+   Se crea el docker build de httpd custom "docker build -t httpdpxe ."
+ Corremos el contenedor "docker run -d --name httpdxe --net=host -p X.X.X.X:80:80  httpxe"
+  
+   
+DHCPD 
+  creamos una carpeta en la raiz llamda data "mkdir /data"
+ Copiamos el archivo dhcpd.config con la configuracion correspondiente a /data.
+Corremos en contenedor "docker run  -d  --name DHCPD --init  --net=host -v /data:/data  dhcpd"
+
+nfsalpine12
+  Creamos la carpeta "mkdir -p /data/nfs-storage"
+  Dentro del folder nfs-storage montamos el ISO
+  "mount -o loop  /tmp/SLE-15-SP3-Full-x86_64-GM-Media1.iso /data/nfs-storage/"
+  
+  Creamos el contenedor
+           docker run -itd --privileged \
+          --net=host              \
+          --name NFSPXE            \
+          --restart unless-stopped \
+          -e SHARED_DIRECTORY=/data \
+          -v /data/nfs-storage:/data \
+          -p 2049:2049 \
+          nfsalpine12
+          
+ TFTP 
+  creamos el volume tftpboot "docker create tftpboot"
+  Copiamos los archivos de booteo en /var/lib/docker/volumes/tftpboot/_data
+  Creamos el contenedor "docker run  -d  --name tftpboot  -p 22.42.211.44:69:69/udp -v tftpboot:/var/tftpboot -i -t  tftp"
+  
+  
+ Verificamos que todos los contenedores esten corriendo con "docker ps"
+ 
