@@ -41,3 +41,30 @@ nfsalpine12
   
  Verificamos que todos los contenedores esten corriendo con "docker ps"
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ --------------------REVISAR
+ docker run -itd --privileged \
+          --net=host              \
+          --name NF222SFFPXE            \
+          --restart unless-stopped \
+          -e SHARED_DIRECTORY=/nfsshare\
+          -v /data/nfs-storage:/nfsshare \
+	-e SHARED_DIRECTORY_2=/nfsshare/another \
+          -v /data/nfs-storage2:/nfsshare/another \
+          -p 2049:2049 \
+          itsthenetwork/nfs-server-alpine
+          
+          
+          https://hub.docker.com/r/itsthenetwork/nfs-server-alpine/
