@@ -1,4 +1,4 @@
-### archived in favor of v2 release soon ;)
+### 
 
 <img src="https://i.imgur.com/eA6clZr.png">
 
