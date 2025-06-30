@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitectura de Ejecución Remota Segura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+    Chosen Palette: "Dark Tech" - Inspired by the reference HTML, this palette uses a near-black background (#0a0a0a), dark gray surfaces (#1a1a1a) for components, a bright red (#ff4136) as the primary accent, and light gray text (#f0f0f0) for high contrast. This creates a modern, focused, dark-mode aesthetic.
+    Application Structure Plan: The SPA transforms the linear slide deck into an interactive, single-page experience with a sticky top navigation for easy access to all sections. The core of the app is an animated, step-by-step visualization of the architecture diagram, which brings the process to life. Technical concepts and the detailed workflow are organized into interactive tabs and clickable steps, respectively, to prevent cognitive overload and encourage user engagement. This structure was chosen to turn passive reading into active exploration, making the complex architecture more intuitive and understandable for a technical audience.
+    Visualization & Content Choices: 
+    - Report Info: Architecture Diagram -> Goal: Understand Process Flow -> Viz/Method: Interactive Diagram (HTML/CSS/JS) -> Interaction: User clicks a button to animate each step of the flow in sequence, with accompanying text descriptions. -> Justification: Actively demonstrating the process is far more effective for learning than a static image.
+    - Report Info: Technical Concepts (SUID, setuid, etc.) -> Goal: Inform/Detail -> Viz/Method: Tabbed Interface (HTML/CSS/JS) -> Interaction: User clicks on a tab to view the content for that specific concept. -> Justification: Organizes detailed information cleanly, allowing users to focus on one concept at a time without being overwhelmed.
+    - Report Info: Detailed Workflow -> Goal: Clarify Sequence -> Viz/Method: Clickable Numbered List (HTML/CSS/JS) -> Interaction: User clicks on a step number to reveal its detailed explanation. -> Justification: Breaks down a complex sequence into manageable chunks, reinforcing the order of operations.
+    - Report Info: Benefits -> Goal: Summarize -> Viz/Method: Styled Cards (HTML/CSS) -> Interaction: Static display with icons for quick visual parsing. -> Justification: Provides a clear, scannable summary of the key advantages.
+    - Library/Method: All interactions are handled with vanilla JavaScript. Layout and styling use Tailwind CSS.
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        :root {
+            --color-background: #0a0a0a;
+            --color-surface: #1a1a1a;
+            --color-primary: #ff4136;
+            --color-text-primary: #f0f0f0;
+            --color-text-secondary: #a0a0a0;
+            --color-border: #2a2a2a;
+        }
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+        }
+        .nav-link {
+            transition: color 0.2s, border-bottom-color 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+        .tab.active {
+            background-color: var(--color-primary);
+            color: var(--color-background);
+        }
+        .diagram-box {
+            transition: all 0.5s ease-in-out;
+            border: 2px solid var(--color-border);
+        }
+        .diagram-box.active {
+            border-color: var(--color-primary);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 65, 54, 0.3);
+        }
+        .diagram-arrow {
+            transition: all 0.5s ease-in-out;
+            opacity: 0.2;
+        }
+        .diagram-arrow.active {
+            opacity: 1;
+            color: var(--color-text-primary);
+        }
+        .step.active .step-circle {
+            background-color: var(--color-primary);
+            color: var(--color-background);
+        }
+        .step.active .step-content {
+            max-height: 500px;
+            opacity: 1;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        .step-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.5s ease-in-out;
+        }
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 35px rgba(255, 65, 54, 0.5);
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <!-- Header & Navigation -->
+    <header class="bg-black/80 backdrop-blur-lg sticky top-0 z-50 border-b border-[#2a2a2a]">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-100">Lu<span class="text-[#ff4136]">Lu</span></h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#desafio" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-400">Linux Unified Logic Utility</a>
+                        <a href="#solucion" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-400">La Solución</a>
+                        <a href="#arquitectura" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-400">Arquitectura</a>
+                        <a href="#conceptos" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-400">Conceptos</a>
+                        <a href="#flujo" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-400">Flujo de Trabajo</a>
+                        <a href="#beneficios" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-400">Beneficios</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <!-- Section 1: El Desafío -->
+        <section id="desafio" class="mb-24 scroll-mt-20">
+            <h2 class="text-4xl font-bold text-center mb-4 text-gray-100">Linux Unified Logic Utility</h2>
+            <p class="text-xl text-center text-gray-400 max-w-3xl mx-auto mb-12">¿Cómo podemos ejecutar comandos de sistema privilegiados desde una interfaz web de forma completamente segura?</p>
+            <div class="grid md:grid-cols-3 gap-8 items-center text-center">
+                <div class="bg-[#1a1a1a] p-6 rounded-lg border border-[#2a2a2a]">
+                    <span class="text-5xl">👤</span>
+                    <h3 class="text-lg font-semibold mt-4 text-gray-100">Usuario Web Limitado</h3>
+                    <p class="text-sm text-gray-400 mt-2">El servidor web (Apache/PHP) se ejecuta como `www-data`, un usuario con permisos mínimos por razones de seguridad.</p>
+                </div>
+                <div class="text-center">
+                     <span class="text-6xl font-mono text-[#ff4136] animate-pulse">→ 🚫 ←</span>
+                </div>
+                <div class="bg-[#1a1a1a] p-6 rounded-lg border border-[#2a2a2a]">
+                    <span class="text-5xl">⚙️</span>
+                    <h3 class="text-lg font-semibold mt-4 text-gray-100">Comandos Críticos</h3>
+                    <p class="text-sm text-gray-400 mt-2">Acciones como `reboot` o `shutdown` requieren privilegios de `root` que el usuario web no posee.</p>
+                </div>
+            </div>
+            <div class="mt-12 bg-gray-900 rounded-lg p-6 max-w-md mx-auto border border-[#2a2a2a]">
+                <p class="text-gray-400 font-mono text-sm">> <span class="text-white">php -r "shell_exec('reboot');"</span></p>
+                <p id="denied-message" class="text-[#ff4136] font-mono text-sm mt-2 opacity-0 transition-opacity duration-1000">sh: 1: reboot: <span class="font-bold">Permiso denegado</span></p>
+            </div>
+        </section>
+
+        <!-- Section 2: La Solución -->
+        <section id="solucion" class="mb-24 scroll-mt-20">
+            <h2 class="text-4xl font-bold text-center mb-4 text-gray-100">Solución</h2>
+            <p class="text-xl text-center text-gray-400 max-w-3xl mx-auto mb-12">En lugar de debilitar la seguridad, introducimos un intermediario especializado y de confianza: un "Portero" inteligente llamado LuLu</p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-[#1a1a1a] p-8 rounded-lg border border-[#2a2a2a] hover:border-[#ff4136] transition-colors">
+                    <h3 class="text-xl font-semibold text-[#ff4136] mb-3">1. Core LuLu</h3>
+                    <p class="text-gray-400">Programa pequeño, rápido y compilado en C, un lenguaje de bajo nivel ideal para interactuar con el sistema operativo.</p>
+                </div>
+                <div class="bg-[#1a1a1a] p-8 rounded-lg border border-[#2a2a2a] hover:border-[#ff4136] transition-colors">
+                    <h3 class="text-xl font-semibold text-[#ff4136] mb-3">2. Permisos SUID</h3>
+                    <p class="text-gray-400">Al programa se le asigna el permiso especial SUID, permitiéndole ejecutarse temporalmente con los privilegios de su dueño (`root`).</p>
+                </div>
+                <div class="bg-[#1a1a1a] p-8 rounded-lg border border-[#2a2a2a] hover:border-[#ff4136] transition-colors">
+                    <h3 class="text-xl font-semibold text-[#ff4136] mb-3">3. Misión Única y Segura</h3>
+                    <p class="text-gray-400">Su única tarea es recibir una petición de PHP, validarla rigurosamente contra una ruta permitida y, solo si es segura, ejecutarla.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Arquitectura Interactiva -->
+        <section id="arquitectura" class="mb-24 scroll-mt-20">
+            <h2 class="text-4xl font-bold text-center mb-4 text-gray-100">Arquitectura Interactiva</h2>
+            <p class="text-xl text-center text-gray-400 max-w-3xl mx-auto mb-12">El siguiente diagrama muestra el flujo de ejecución. Presiona "Iniciar Flujo" para ver cómo cada componente se activa en secuencia y entender su rol en el proceso.</p>
+            
+            <div id="diagram" class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-2 text-center text-sm md:text-base">
+                <div id="diag-1" class="diagram-box bg-[#1a1a1a] p-4 rounded-lg w-48 h-24 flex items-center justify-center">Navegador Web<br>(Usuario)</div>
+                <div id="arrow-1" class="diagram-arrow text-4xl font-light transform md:-rotate-0 rotate-90">→</div>
+                <div id="diag-2" class="diagram-box bg-[#1a1a1a] p-4 rounded-lg w-48 h-24 flex items-center justify-center">Servidor Web<br>(PHP)</div>
+                <div id="arrow-2" class="diagram-arrow text-4xl font-light transform md:-rotate-0 rotate-90">→</div>
+                <div id="diag-3" class="diagram-box bg-[#1a1a1a] p-4 rounded-lg w-48 h-24 flex items-center justify-center font-semibold">LuLu<br>(CORE)</div>
+                <div id="arrow-3" class="diagram-arrow text-4xl font-light transform md:-rotate-0 rotate-90">→</div>
+                <div id="diag-4" class="diagram-box bg-[#1a1a1a] p-4 rounded-lg w-48 h-24 flex items-center justify-center">Script Temporal<br>(.sh)</div>
+                <div id="arrow-4" class="diagram-arrow text-4xl font-light transform md:-rotate-0 rotate-90">→</div>
+                <div id="diag-5" class="diagram-box bg-[#1a1a1a] p-4 rounded-lg w-48 h-24 flex items-center justify-center">Host Remoto<br>(Servidor)</div>
+            </div>
+
+            <div class="text-center mt-8">
+                <button id="start-flow-btn" class="cta-button bg-[#ff4136] text-black font-bold py-3 px-6 rounded-lg transition-transform transition-shadow">Iniciar Flujo</button>
+                <button id="reset-flow-btn" class="bg-gray-700 text-gray-200 font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition-colors ml-4" style="display: none;">Reiniciar</button>
+            </div>
+            <div id="flow-explanation" class="mt-6 text-center text-gray-400 h-12 flex items-center justify-center">
+                <p class="transition-opacity duration-300 opacity-100">Presiona el botón para comenzar la animación.</p>
+            </div>
+        </section>
+
+
+        <!-- Section 4: Conceptos Técnicos Clave -->
+        <section id="conceptos" class="mb-24 scroll-mt-20">
+            <h2 class="text-4xl font-bold text-center mb-4 text-gray-100">Conceptos Técnicos Clave</h2>
+            <p class="text-xl text-center text-gray-400 max-w-3xl mx-auto mb-12">Esta arquitectura se apoya en tres conceptos fundamentales de Linux y la programación en C para garantizar su seguridad y eficacia.</p>
+            <div class="max-w-4xl mx-auto">
+                <div class="flex border-b border-[#2a2a2a]">
+                    <button data-tab="suid" class="tab flex-1 py-3 px-4 text-center font-semibold text-gray-400 transition-colors duration-300 active">Bit SUID</button>
+                    <button data-tab="setuid" class="tab flex-1 py-3 px-4 text-center font-semibold text-gray-400 transition-colors duration-300">setuid(0)</button>
+                    <button data-tab="validation" class="tab flex-1 py-3 px-4 text-center font-semibold text-gray-400 transition-colors duration-300">Validación de Ruta</button>
+                </div>
+                <div class="bg-[#1a1a1a] p-8 rounded-b-lg border border-t-0 border-[#2a2a2a]">
+                    <div id="tab-suid" class="tab-content">
+                        <h3 class="text-2xl font-semibold mb-4 text-gray-100">Bit SUID (`Set User ID`)</h3>
+                        <p class="text-gray-400">Es un permiso especial que se le asigna a un archivo ejecutable en sistemas tipo Unix. Su función es crucial: le indica al sistema operativo que, cuando cualquier usuario ejecute este programa, debe hacerlo con los permisos del **dueño del archivo**, en lugar de los permisos del usuario que lo invocó. Si el dueño del ejecutable es `root`, el programa se ejecutará con privilegios de `root`, sin importar quién lo haya iniciado.</p>
+                    </div>
+                    <div id="tab-setuid" class="tab-content hidden">
+                        <h3 class="text-2xl font-semibold mb-4 text-gray-100">LuLu</h3>
+                        <p class="text-gray-400 mb-4">Es la llamada al sistema específica dentro del código fuente del Core LuLu que efectúa el cambio de privilegio. Le pide directamente al kernel que cambie el ID de usuario efectivo del proceso actual al del usuario con ID `0`, que por convención universal es `root`. Es la instrucción que materializa el poder otorgado por el bit SUID.</p>
+                        <pre class="bg-gray-900 text-white p-4 rounded-lg text-sm font-mono border border-[#2a2a2a]"><code>setuid(0); // Establece el UID efectivo </code></pre>
+                    </div>
+                    <div id="tab-validation" class="tab-content hidden">
+                        <h3 class="text-2xl font-semibold mb-4 text-gray-100">Validación de Ruta (El Guardián)</h3>
+                        <p class="text-gray-400 mb-4">Esta es la pieza de seguridad más importante del programa. Antes de ejecutar cualquier comando, se utiliza una función como `strncmp` para comparar el inicio de la ruta del script proporcionado con una ruta predefinida y segura. Esto crea una "cárcel" de directorios permitidos, asegurando que el programa **nunca** pueda ser utilizado para ejecutar scripts maliciosos ubicados en otras partes del sistema.</p>
+                        <pre class="bg-gray-900 text-white p-4 rounded-lg text-sm font-mono border border-[#2a2a2a]"><code>// Si la ruta no comienza con el prefijo seguro, abortar.
+if (strncmp(argv[1], "/custom/path/", 37) != 0) {
+    return 1; // Error de seguridad
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Flujo de Trabajo Detallado -->
+        <section id="flujo" class="mb-24 scroll-mt-20">
+            <h2 class="text-4xl font-bold text-center mb-4 text-gray-100">Flujo de Trabajo Detallado</h2>
+            <p class="text-xl text-center text-gray-400 max-w-3xl mx-auto mb-12">Explora el proceso paso a paso, desde el clic del usuario hasta la ejecución final del comando en el servidor remoto. Haz clic en cada paso para ver los detalles.</p>
+            <div class="max-w-4xl mx-auto space-y-2">
+                <div class="step active bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
+                    <div class="step-header flex items-center cursor-pointer p-4">
+                        <div class="step-circle flex-shrink-0 bg-gray-700 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-300 transition-colors">1</div>
+                        <h4 class="ml-4 font-semibold text-lg text-gray-100">Clic del Usuario</h4>
+                    </div>
+                    <div class="step-content px-4 text-gray-400">
+                        <p>Todo comienza en la interfaz web.</p>
+                    </div>
+                </div>
+                <div class="step bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
+                    <div class="step-header flex items-center cursor-pointer p-4">
+                        <div class="step-circle flex-shrink-0 bg-gray-700 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-300 transition-colors">2</div>
+                        <h4 class="ml-4 font-semibold text-lg text-gray-100">Acción del Script web</h4>
+                    </div>
+                    <div class="step-content px-4 text-gray-400">
+                        <p>El script  recibe la petición y crea un archivo de script temporal  en la carpeta segura predefinida. Dentro de este archivo, escribe el comando real que debe ejecutarse. </p>
+                    </div>
+                </div>
+                <div class="step bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
+                    <div class="step-header flex items-center cursor-pointer p-4">
+                        <div class="step-circle flex-shrink-0 bg-gray-700 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-300 transition-colors">3</div>
+                        <h4 class="ml-4 font-semibold text-lg text-gray-100">Llamada al Núcleo LuLu en C</h4>
+                    </div>
+                    <div class="step-content px-4 text-gray-400">
+                        <p>PHP no intenta ejecutar el script directamente. En su lugar, invoca al core LuLu y le pasa como argumento la ruta completa al script temporal que acaba de crear. Ej: `shell_exec('/ruta/programa_c /ruta/script');`</p>
+                    </div>
+                </div>
+                <div class="step bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
+                    <div class="step-header flex items-center cursor-pointer p-4">
+                        <div class="step-circle flex-shrink-0 bg-gray-700 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-300 transition-colors">4</div>
+                        <h4 class="ml-4 font-semibold text-lg text-gray-100">Magia y Seguridad en el Core</h4>
+                    </div>
+                    <div class="step-content px-4 text-gray-400">
+                        <p>El sistema operativo, al ver el bit SUID, ejecuta el LuLu con privilegios de `root`. El programa primero valida que la ruta del script sea la permitida. Si la validación es exitosa, ejecuta el script. Si no, se detiene inmediatamente.</p>
+                    </div>
+                </div>
+                 <div class="step bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
+                    <div class="step-header flex items-center cursor-pointer p-4">
+                        <div class="step-circle flex-shrink-0 bg-gray-700 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-300 transition-colors">5</div>
+                        <h4 class="ml-4 font-semibold text-lg text-gray-100">Ejecución Final</h4>
+                    </div>
+                    <div class="step-content px-4 text-gray-400">
+                        <p>El comando dentro del script  se ejecuta con éxito en el host remoto, ya que fue invocado por un proceso que, en ese momento, tenía los máximos privilegios del sistema.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Beneficios -->
+        <section id="beneficios" class="scroll-mt-20">
+            <h2 class="text-4xl font-bold text-center mb-4 text-gray-100">Conclusiones y Beneficios</h2>
+            <p class="text-xl text-center text-gray-400 max-w-3xl mx-auto mb-12">Esta arquitectura no solo resuelve el problema inicial, sino que lo hace siguiendo las mejores prácticas de seguridad informática.</p>
+             <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-[#1a1a1a] p-8 rounded-lg text-center border border-[#2a2a2a]">
+                    <span class="text-5xl">🛡️</span>
+                    <h3 class="text-xl font-semibold text-gray-100 my-3">Seguridad Máxima</h3>
+                    <p class="text-gray-400">La superficie de ataque es mínima. El servidor web y el script PHP nunca obtienen privilegios elevados, aislando el riesgo.</p>
+                </div>
+                <div class="bg-[#1a1a1a] p-8 rounded-lg text-center border border-[#2a2a2a]">
+                     <span class="text-5xl">🎯</span>
+                    <h3 class="text-xl font-semibold text-gray-100 my-3">Control Total</h3>
+                    <p class="text-gray-400">Solo las acciones explícitamente definidas en los scripts dentro de la carpeta segura pueden ser ejecutadas. No hay espacio para la improvisación.</p>
+                </div>
+                <div class="bg-[#1a1a1a] p-8 rounded-lg text-center border border-[#2a2a2a]">
+                     <span class="text-5xl">🔑</span>
+                    <h3 class="text-xl font-semibold text-gray-100 my-3">Principio de Menor Privilegio</h3>
+                    <p class="text-gray-400">Cada componente opera con los permisos estrictamente necesarios para su función, siguiendo la regla de oro de la ciberseguridad.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 text-sm text-gray-500 border-t border-[#2a2a2a] mt-24">
+        <p>&copy; 2025 LuLu – Linux Unified Logic Utility. Sergio Ledezma.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Navigation Highlighting ---
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            window.onscroll = () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            
+            // --- Denied Message Animation ---
+            setTimeout(() => {
+                document.getElementById('denied-message').style.opacity = '1';
+            }, 500);
+
+            // --- Interactive Diagram ---
+            const startBtn = document.getElementById('start-flow-btn');
+            const resetBtn = document.getElementById('reset-flow-btn');
+            const explanationEl = document.getElementById('flow-explanation').querySelector('p');
+            const diagramElements = document.querySelectorAll('.diagram-box, .diagram-arrow');
+            
+            const explanations = [
+                "1. El usuario inicia la acción desde su navegador.",
+                "1 → 2: La petición viaja al servidor web.",
+                "2. El script PHP recibe la petición y prepara un script temporal.",
+                "2 → 3: PHP invoca al programa en C con la ruta del script.",
+                "3. El programa en C, con privilegios de root, valida la ruta.",
+                "3 → 4: Si es válida, el programa ejecuta el script temporal.",
+                "4. El script contiene el comando real a ejecutar.",
+                "4 → 5: El comando se envía al host remoto vía SSH.",
+                "5. El host remoto recibe y ejecuta el comando con éxito."
+            ];
+
+            let flowTimeout;
+
+            startBtn.addEventListener('click', () => {
+                startBtn.style.display = 'none';
+                resetBtn.style.display = 'inline-block';
+                let delay = 0;
+
+                diagramElements.forEach((el, index) => {
+                    flowTimeout = setTimeout(() => {
+                        el.classList.add('active');
+                        explanationEl.style.opacity = '0';
+                        setTimeout(() => {
+                            explanationEl.textContent = explanations[index];
+                            explanationEl.style.opacity = '1';
+                        }, 300);
+                    }, delay);
+                    delay += 1200;
+                });
+            });
+
+            resetBtn.addEventListener('click', () => {
+                clearTimeout(flowTimeout);
+                diagramElements.forEach(el => el.classList.remove('active'));
+                startBtn.style.display = 'inline-block';
+                resetBtn.style.display = 'none';
+                explanationEl.textContent = "Presiona el botón para comenzar la animación.";
+            });
+
+            // --- Tabs for Technical Concepts ---
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(item => item.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const target = tab.getAttribute('data-tab');
+                    tabContents.forEach(content => {
+                        if (content.id === `tab-${target}`) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // --- Accordion for Workflow ---
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(step => {
+                const header = step.querySelector('.step-header');
+                header.addEventListener('click', () => {
+                    const currentlyActive = document.querySelector('.step.active');
+                    if (currentlyActive && currentlyActive !== step) {
+                        currentlyActive.classList.remove('active');
+                    }
+                    step.classList.toggle('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
