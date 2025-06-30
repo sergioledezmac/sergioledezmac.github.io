@@ -3,327 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblioteca de APIs - LuLu Console</title>
+    <title>LuLu – Linux Unified Logic Utility</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- Estilos Generales --- */
         :root {
-            --sidebar-width-expanded: 250px;
-            --sidebar-width-collapsed: 60px;
-            --lulu-blue: #3367d6;
-            --lulu-light-blue: #e8f0fe;
-            --lulu-text-primary: #202124;
-            --lulu-text-secondary: #5f6368;
-            --lulu-border-color: #dadce0;
+            --color-background: #0a0a0a;
+            --color-surface: #1a1a1a;
+            --color-primary: #ff4136; /* Color cambiado a rojo */
+            --color-text-primary: #f0f0f0;
+            --color-text-secondary: #a0a0a0;
+            --font-main: 'Inter', sans-serif;
+        }
+
+        /* --- Reseteo y Estilos Globales --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            margin: 0;
-            font-family: 'Roboto', Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: var(--lulu-text-primary);
-            display: flex;
-            flex-direction: column;
-            transition: padding-left 0.3s ease-in-out;
+            font-family: var(--font-main);
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            line-height: 1.6;
         }
 
-        /* --- Header Superior --- */
-        .lulu-header {
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            height: 48px;
-            background-color: #ffffff;
-            border-bottom: 1px solid var(--lulu-border-color);
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- Encabezado y Navegación --- */
+        .main-header {
+            padding: 20px 0;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            width: 100%;
+            background-color: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
             z-index: 1000;
         }
 
-        #sidebar-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            margin-right: 16px;
-            border-radius: 50%;
-        }
-        #sidebar-toggle:hover { background-color: #f1f3f4; }
-        .hamburger-icon {
-            width: 20px;
-            height: 14px;
+        .main-header .container {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-        }
-        .hamburger-icon span {
-            display: block;
-            height: 2px;
-            background-color: var(--lulu-text-secondary);
+            align-items: center;
         }
 
         .logo {
-            font-size: 22px;
-            font-weight: 500;
-            color: var(--lulu-text-secondary);
-        }
-        .logo span { font-weight: bold; color: var(--lulu-blue); }
-        
-        .search-bar { flex-grow: 1; margin: 0 40px; max-width: 720px; }
-        .search-bar input {
-            width: 100%;
-            height: 32px;
-            border: 1px solid var(--lulu-border-color);
-            border-radius: 8px;
-            padding: 0 16px;
-            background-color: #f1f3f4;
-            font-size: 14px;
-        }
-        .search-bar input:focus {
-            background-color: #fff;
-            border-color: #1a73e8;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
-        }
-
-        .header-icons { display: flex; align-items: center; gap: 20px; font-size: 20px; color: var(--lulu-text-secondary); }
-        .user-avatar { width: 32px; height: 32px; background-color: #e8710a; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; }
-
-        /* --- Layout Principal --- */
-        .main-layout { display: flex; margin-top: 48px; }
-
-        /* --- Sidebar de Navegación Izquierda --- */
-        .sidebar {
-            width: var(--sidebar-width-expanded);
-            height: calc(100vh - 48px);
-            background-color: #ffffff;
-            border-right: 1px solid var(--lulu-border-color);
-            padding-top: 8px;
-            position: fixed;
-            left: 0;
-            top: 48px;
-            overflow-x: hidden;
-            transition: width 0.3s ease-in-out;
-        }
-
-        .project-selector { padding: 8px 16px; margin: 0 8px 8px 8px; border-bottom: 1px solid var(--lulu-border-color); transition: opacity 0.3s; }
-        .project-selector select { width: 100%; border: none; font-size: 14px; font-weight: 500; background-color: transparent; }
-        
-        .sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
-        .sidebar-nav li a {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 10px 24px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
             text-decoration: none;
-            color: #3c4043;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-        .sidebar-nav li a .link-icon { font-size: 18px; width: 20px; text-align: center; }
-        .sidebar-nav li a:hover { background-color: var(--lulu-light-blue); }
-        
-        .sidebar-nav li.active a {
-            background-color: var(--lulu-light-blue);
-            color: #1967d2;
-            font-weight: 500;
-            border-left: 4px solid #1967d2;
-            padding-left: 20px;
-        }
-
-        /* --- Estado Colapsado del Sidebar --- */
-        body.sidebar-collapsed .sidebar { width: var(--sidebar-width-collapsed); }
-        body.sidebar-collapsed .main-content { margin-left: var(--sidebar-width-collapsed); }
-        body.sidebar-collapsed .project-selector { opacity: 0; pointer-events: none; }
-        body.sidebar-collapsed .sidebar-nav .link-text { opacity: 0; width: 0; }
-        body.sidebar-collapsed .sidebar-nav li a { justify-content: center; padding: 10px 0; }
-        body.sidebar-collapsed .sidebar-nav li.active a { padding-left: 0; }
-
-        /* --- Contenido Principal --- */
-        .main-content {
-            flex-grow: 1;
-            margin-left: var(--sidebar-width-expanded);
-            padding: 24px;
-            transition: margin-left 0.3s ease-in-out;
         }
         
-        .main-content h1 { font-size: 24px; font-weight: 400; margin-bottom: 16px; }
-        .welcome-banner { background-color: var(--lulu-light-blue); border: 1px solid #d2e3fc; border-radius: 8px; padding: 16px; margin-bottom: 24px; font-size: 14px; }
-        .content-body { display: flex; gap: 24px; }
-
-        /* --- Filtros --- */
-        .filters { width: 220px; flex-shrink: 0; }
-        .filters h3 { font-size: 14px; font-weight: 500; color: var(--lulu-text-secondary); margin-bottom: 8px; padding: 0 8px; }
-        .filters ul { list-style: none; padding: 0; margin: 0; }
-        .filters li a { display: block; padding: 8px; text-decoration: none; color: #3c4043; font-size: 14px; border-radius: 4px; }
-        .filters li a:hover { background-color: #f1f3f4; }
-        .filters li.active a { background-color: var(--lulu-light-blue); color: #1967d2; font-weight: 500; }
-
-        /* --- Cuadrícula de APIs --- */
-        .api-grid {
-            flex-grow: 1;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
+        .logo span {
+            color: var(--color-primary);
+        }
+        
+        .main-nav a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            margin-left: 25px;
+            font-weight: 600;
+            transition: color 0.3s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        .main-nav a:hover {
+            color: var(--color-primary);
         }
 
-        .api-card {
-            background-color: #ffffff;
-            border: 1px solid var(--lulu-border-color);
+        /* --- Sección Hero --- */
+        #hero {
+            padding-top: 180px;
+            padding-bottom: 120px;
+            text-align: center;
+            background: radial-gradient(circle, rgba(255, 65, 54, 0.05) 0%, rgba(10,10,10,0) 60%);
+        }
+
+        #hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        #hero .subtitle {
+            font-size: 1.5rem;
+            color: var(--color-primary);
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: var(--color-primary);
+            color: var(--color-background);
+            padding: 15px 35px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
             border-radius: 8px;
-            padding: 16px;
-            display: flex; /* Cambiado por JS para filtrar */
-            flex-direction: column;
-            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
-            opacity: 0; /* Inicia invisible para la animación */
-            animation: fadeIn 0.5s ease-out forwards;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 65, 54, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 35px rgba(255, 65, 54, 0.5);
+        }
+
+        /* --- Sección de Características --- */
+        #features {
+            padding: 100px 0;
         }
         
-        .api-card:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.08); transform: translateY(-2px); cursor: pointer; }
-        .api-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .api-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; color: white; }
-        .api-icon.ai { background-color: #3367d6; }
-        .api-icon.storage { background-color: #ea4335; }
-        .api-icon.maps { background-color: #34a853; }
-        .api-icon.compute { background-color: #fbbc05; }
-        .api-icon.database { background-color: #4285f4; }
-        .api-card h4 { font-size: 16px; font-weight: 500; margin: 0; }
-        .api-card p { font-size: 13px; line-height: 1.5; color: var(--lulu-text-secondary); flex-grow: 1; margin: 0 0 16px 0; }
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: var(--color-text-primary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background-color: var(--color-surface);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--color-primary);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: var(--color-text-secondary);
+        }
+
+        /* --- Sección de Arquitectura (Gráfico Interactivo) --- */
+        #architecture {
+            padding: 100px 0;
+            text-align: center;
+            background-color: var(--color-surface);
+        }
+        
+        .architecture-diagram {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Estilos base del SVG */
+        .diagram-bg { fill: none; }
+        .diagram-line { stroke: var(--color-text-secondary); stroke-width: 2.5; fill: none; transition: stroke 0.3s ease, stroke-width 0.3s ease; }
+        .diagram-shape { stroke: var(--color-text-secondary); stroke-width: 2.5; fill: var(--color-surface); transition: stroke 0.3s ease; }
+        .diagram-shape-accent { stroke: #444; stroke-width: 3.5; transition: stroke 0.3s ease, filter 0.3s ease; }
+        .diagram-text { fill: var(--color-text-secondary); font-family: var(--font-main); font-size: 14px; font-weight: 600; transition: fill 0.3s ease; }
+        .diagram-text-core { font-size: 18px; fill: var(--color-text-primary); }
+        .diagram-text-accent { fill: #888; transition: fill 0.3s ease;}
+
+        /* Estilos de interactividad */
+        .interactive-node { cursor: pointer; }
+        .interactive-node:hover .diagram-text { fill: var(--color-text-primary); }
+        .interactive-node.highlight .diagram-shape { stroke: var(--color-primary); }
+        .interactive-node.highlight .diagram-text { fill: var(--color-text-primary); }
+        .diagram-line.highlight { stroke: var(--color-primary); stroke-width: 3; }
+        .core-active #core-accent-circle {
+            stroke: var(--color-primary);
+            filter: drop-shadow(0 0 8px var(--color-primary));
+        }
+        
+        /* Animación de dibujado */
+        .animated-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 2s 0.5s ease-in-out forwards;
+        }
+        
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+
+        /* --- Footer --- */
+        .main-footer { padding: 40px 0; text-align: center; border-top: 1px solid #2a2a2a; }
+        .main-footer p { color: var(--color-text-secondary); }
+
+        /* --- Responsividad --- */
+        @media (max-width: 768px) {
+            #hero h1 { font-size: 2.8rem; }
+            #hero .subtitle { font-size: 1.2rem; }
+            .section-title { font-size: 2rem; }
+            .main-header .container { flex-direction: column; }
+            .main-nav { margin-top: 15px; }
+        }
     </style>
 </head>
 <body>
 
-    <header class="lulu-header">
-        <button id="sidebar-toggle" title="Menú de navegación principal">
-            <div class="hamburger-icon"><span></span><span></span><span></span></div>
-        </button>
-        <div class="logo"><span>LuLu</span> Console</div>
-        <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Buscar APIs y servicios">
-        </div>
-        <div class="header-icons">
-            <span>?</span>
-            <span>🔔</span>
-            <div class="user-avatar">L</div>
+    <header class="main-header">
+        <div class="container">
+            <a href="#" class="logo">Lu<span>Lu</span></a>
+            <nav class="main-nav">
+                <a href="#features">Características</a>
+                <a href="#architecture">Arquitectura</a>
+                <a href="#contact">Contacto</a>
+            </nav>
         </div>
     </header>
 
-    <div class="main-layout">
-        <aside class="sidebar">
-            <div class="project-selector">
-                <select>
-                    <option>gen-lang-client-0774271717</option>
-                    <option>mi-otro-proyecto</option>
-                    <option>proyecto-de-produccion</option>
-                </select>
+    <main>
+        <section id="hero">
+            <div class="container">
+                <h1>LuLu – Linux Unified Logic Utility</h1>
+                <p class="subtitle">Automatiza el 100% de los procesos en Linux.</p>
+                <a href="#" class="cta-button">Solicitar Acceso Anticipado</a>
             </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="#"><span class="link-icon">📊</span><span class="link-text">Panel</span></a></li>
-                    <li class="active"><a href="#"><span class="link-icon">📖</span><span class="link-text">Biblioteca</span></a></li>
-                    <li><a href="#"><span class="link-icon">✅</span><span class="link-text">APIs habilitadas</span></a></li>
-                    <li><a href="#"><span class="link-icon">🔑</span><span class="link-text">Credenciales</span></a></li>
-                    <li><a href="#"><span class="link-icon">💻</span><span class="link-text">Pantalla OAuth</span></a></li>
-                    <li><a href="#"><span class="link-icon">🌐</span><span class="link-text">Verificación</span></a></li>
-                </ul>
-            </nav>
-        </aside>
+        </section>
 
-        <main class="main-content">
-            <h1>Biblioteca de APIs</h1>
-            <div class="welcome-banner">
-                Bienvenido a la Biblioteca de APIs de LuLu. Busca y explora nuestras APIs para potenciar tus aplicaciones. <a>Aprende a habilitar y inhabilitar APIs</a>.
+        <section id="features">
+            <div class="container">
+                <h2 class="section-title">Potencia y Flexibilidad sin Límites</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h3>Automatización Total</h3>
+                        <p>Libera a tu equipo de tareas repetitivas. LuLu se encarga de la gestión, despliegue y mantenimiento de tus sistemas Linux, permitiéndote enfocarte en lo que realmente importa.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Control Web Intuitivo</h3>
+                        <p>Administra toda tu infraestructura desde una elegante y potente interfaz web. Supervisa, configura y ejecuta tareas complejas con solo unos clics, desde cualquier lugar del mundo.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Integración con IA de Vanguardia</h3>
+                        <p>Aprovecha el poder de la inteligencia artificial. LuLu se integra nativamente con las APIs de IA más potentes como Google Gemini, ChatGPT y OpenAI para optimizar procesos y tomar decisiones inteligentes.</p>
+                    </div>
+                </div>
             </div>
-            <div class="content-body">
-                <aside class="filters">
-                    <h3>Categorías</h3>
-                    <ul>
-                        <li class="active"><a href="#">Todo</a></li>
-                        <li><a href="#">IA y Aprendizaje Automático</a></li>
-                        <li><a href="#">Compute</a></li>
-                        <li><a href="#">Almacenamiento</a></li>
-                        <li><a href="#">Bases de datos</a></li>
-                    </ul>
-                </aside>
-                <section class="api-grid">
-                    <div class="api-card">
-                        <div class="api-card-header"><div class="api-icon ai">AI</div><h4>Vertex AI API</h4></div>
-                        <p>Acceso unificado a modelos de IA generativa y de predicción para potenciar tus aplicaciones.</p>
-                    </div>
-                    <div class="api-card">
-                        <div class="api-card-header"><div class="api-icon storage">S</div><h4>Cloud Storage API</h4></div>
-                        <p>Almacena y recupera cualquier cantidad de datos desde cualquier lugar del mundo.</p>
-                    </div>
-                    <div class="api-card">
-                        <div class="api-card-header"><div class="api-icon maps">M</div><h4>Maps JavaScript API</h4></div>
-                        <p>Muestra mapas, rutas y lugares en tus apps web con opciones de personalización completas.</p>
-                    </div>
-                    <div class="api-card">
-                        <div class="api-card-header"><div class="api-icon compute">C</div><h4>Compute Engine API</h4></div>
-                        <p>Crea y ejecuta máquinas virtuales en la infraestructura de LuLu Console.</p>
-                    </div>
-                    <div class="api-card">
-                        <div class="api-card-header"><div class="api-icon database">DB</div><h4>Firestore API</h4></div>
-                        <p>Base de datos NoSQL para almacenar, sincronizar y consultar datos para apps web y móviles.</p>
-                    </div>
-                    <div class="api-card">
-                        <div class="api-card-header"><div class="api-icon ai">T</div><h4>Cloud Translation API</h4></div>
-                        <p>Traduce texto de forma dinámica entre miles de pares de idiomas.</p>
-                    </div>
-                    <div class="api-card">
-                        <div class="api-card-header"><div class="api-icon ai">V</div><h4>Cloud Vision API</h4></div>
-                        <p>Obtén estadísticas a partir de tus imágenes con una potente tecnología de análisis de imágenes.</p>
-                    </div>
-                    <div class="api-card">
-                        <div class="api-card-header"><div class="api-icon compute">F</div><h4>Cloud Functions API</h4></div>
-                        <p>Crea y conecta servicios en la nube con código que se ejecuta en respuesta a eventos.</p>
-                    </div>
-                </section>
+        </section>
+
+        <section id="architecture">
+            <div class="container">
+                <h2 class="section-title">Arquitectura Interactiva</h2>
+                <p style="color: var(--color-text-secondary); max-width: 600px; margin: -40px auto 60px auto;">Pasa el ratón sobre los componentes para ver cómo se conectan con el núcleo de LuLu.</p>
+                
+                <div class="architecture-diagram">
+                    <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Conexiones -->
+                        <path id="line-desktop" class="diagram-line animated-path" d="M 220 225 Q 300 225 380 225"/>
+                        <path id="line-web" class="diagram-line animated-path" d="M 495 185 Q 550 150 630 110" style="animation-delay: 0.7s"/>
+                        <path id="line-api" class="diagram-line animated-path" d="M 495 265 Q 550 300 630 340" style="animation-delay: 0.9s"/>
+
+                        <!-- Nodo Central: LuLu CORE -->
+                        <g id="node-core">
+                            <circle cx="425" cy="225" r="70" class="diagram-shape"/>
+                            <circle id="core-accent-circle" cx="425" cy="225" r="95" class="diagram-shape diagram-shape-accent"/>
+                            <text x="425" y="215" text-anchor="middle" class="diagram-text-core">Lulu</text>
+                            <text x="425" y="240" text-anchor="middle" class="diagram-text-core">CORE</text>
+                            <text x="425" y="115" text-anchor="middle" class="diagram-text diagram-text-accent">Linux</text>
+                            <text x="425" y="340" text-anchor="middle" class="diagram-text diagram-text-accent">Distro</text>
+                        </g>
+
+                        <!-- Nodo Izquierda: Linux Desktop -->
+                        <g id="node-desktop" class="interactive-node">
+                            <rect x="50" y="190" width="170" height="70" rx="10" class="diagram-shape"/>
+                            <text x="135" y="218" text-anchor="middle" class="diagram-text">Linux desktop</text>
+                            <text x="135" y="238" text-anchor="middle" class="diagram-text">environment</text>
+                        </g>
+
+                        <!-- Nodo Derecha-Arriba: Interfaz Web -->
+                        <g id="node-web" class="interactive-node">
+                            <path d="M 620 90 C 610 70, 640 60, 660 70 C 690 60, 710 80, 700 100 C 720 120, 690 140, 670 130 C 640 140, 610 120, 620 90 Z" class="diagram-shape"/>
+                            <text x="660" y="105" text-anchor="middle" class="diagram-text">Interfaz WEB</text>
+                        </g>
+
+                        <!-- Nodo Derecha-Abajo: AI API -->
+                        <g id="node-api" class="interactive-node">
+                            <path d="M 630 320 L 730 320 L 730 310 L 750 330 L 730 350 L 730 340 L 630 340 Z" class="diagram-shape"/>
+                            <text x="680" y="335" text-anchor="middle" class="diagram-text">IA API</text>
+                        </g>
+                    </svg>
+                </div>
             </div>
-        </main>
-    </div>
+        </section>
+    </main>
+
+    <footer class="main-footer" id="contact">
+        <div class="container">
+            <p>© 2024 LuLu – Linux Unified Logic Utility. Todos los derechos reservados.</p>
+        </div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const coreNode = document.getElementById('node-core');
+            const interactionMap = [
+                {
+                    trigger: document.getElementById('node-desktop'),
+                    line: document.getElementById('line-desktop')
+                },
+                {
+                    trigger: document.getElementById('node-web'),
+                    line: document.getElementById('line-web')
+                },
+                {
+                    trigger: document.getElementById('node-api'),
+                    line: document.getElementById('line-api')
+                }
+            ];
 
-            // --- 1. Lógica para contraer/expandir el Sidebar ---
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            const body = document.body;
+            interactionMap.forEach(item => {
+                item.trigger.addEventListener('mouseover', () => {
+                    item.trigger.classList.add('highlight');
+                    item.line.classList.add('highlight');
+                    coreNode.classList.add('core-active');
+                });
 
-            sidebarToggle.addEventListener('click', () => {
-                body.classList.toggle('sidebar-collapsed');
-            });
-
-            // --- 2. Lógica para la barra de búsqueda funcional ---
-            const searchInput = document.getElementById('search-input');
-            const apiCards = document.querySelectorAll('.api-card');
-
-            searchInput.addEventListener('input', (event) => {
-                const searchTerm = event.target.value.toLowerCase().trim();
-
-                apiCards.forEach(card => {
-                    const title = card.querySelector('h4').textContent.toLowerCase();
-                    const description = card.querySelector('p').textContent.toLowerCase();
-                    const isVisible = title.includes(searchTerm) || description.includes(searchTerm);
-                    
-                    // Usamos 'flex' porque es el display original de la tarjeta.
-                    // Si se oculta, se pone 'none'.
-                    card.style.display = isVisible ? 'flex' : 'none';
+                item.trigger.addEventListener('mouseout', () => {
+                    item.trigger.classList.remove('highlight');
+                    item.line.classList.remove('highlight');
+                    coreNode.classList.remove('core-active');
                 });
             });
-            
-            // --- 3. Lógica para la animación escalonada de las tarjetas ---
-            apiCards.forEach((card, index) => {
-                // Asigna un retraso creciente a cada tarjeta para que no aparezcan todas a la vez
-                card.style.animationDelay = `${index * 0.05}s`;
-            });
-
         });
     </script>
 
